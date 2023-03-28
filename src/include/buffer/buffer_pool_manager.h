@@ -23,6 +23,7 @@
 #include "storage/disk/disk_manager.h"
 #include "storage/page/page.h"
 #include "storage/page/page_guard.h"
+#include "type/boolean_type.h"
 
 namespace bustub {
 
@@ -178,7 +179,7 @@ class BufferPoolManager {
   /** The next page id to be allocated  */
   std::atomic<page_id_t> next_page_id_ = 0;
 
-  /** Array of buffer pool pages. */
+  /** Array of buffer pool pages. Indexed by Frame id*/
   Page *pages_;
   /** Pointer to the disk manager. */
   DiskManager *disk_manager_ __attribute__((__unused__));
@@ -208,5 +209,8 @@ class BufferPoolManager {
   }
 
   // TODO(student): You may add additional private members and helper functions
+
+  auto AllocateFrame(page_id_t page_id, frame_id_t *frame_id) -> bool;
+  auto FlushPageNoLock(page_id_t page_id) -> bool;
 };
 }  // namespace bustub

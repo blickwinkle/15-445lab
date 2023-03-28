@@ -18,10 +18,10 @@ auto TrieStore::Get(std::string_view key) -> std::optional<ValueGuard<T>> {
   //     root. Otherwise, return std::nullopt.
   if (ret_val == nullptr) {
     return std::nullopt;
-  }   
+  }
   return ValueGuard<T>(std::move(root), *ret_val);
- 
-  //throw NotImplementedException("TrieStore::Get is not implemented.");
+
+  // throw NotImplementedException("TrieStore::Get is not implemented.");
 }
 
 template <class T>
@@ -42,13 +42,13 @@ void TrieStore::Put(std::string_view key, T value) {
 
   this->write_lock_.unlock();
 
-  //throw NotImplementedException("TrieStore::Put is not implemented.");
+  // throw NotImplementedException("TrieStore::Put is not implemented.");
 }
 
 void TrieStore::Remove(std::string_view key) {
   // You will need to ensure there is only one writer at a time. Think of how you can achieve this.
   // The logic should be somehow similar to `TrieStore::Get`.
-  //throw NotImplementedException("TrieStore::Remove is not implemented.");
+  // throw NotImplementedException("TrieStore::Remove is not implemented.");
 
   this->write_lock_.lock();
 
