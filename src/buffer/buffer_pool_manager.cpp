@@ -85,9 +85,8 @@ auto BufferPoolManager::FetchPage(page_id_t page_id, [[maybe_unused]] AccessType
   if (page_table_.count(page_id) != 0) {
     frame_id = page_table_[page_id];
     pages_[frame_id].pin_count_++;
-    if (pages_[frame_id].pin_count_ == 1) {
-      replacer_->SetEvictable(frame_id, false);
-    }
+    replacer_->SetEvictable(frame_id, false);
+    replacer_->RecordAccess(frame_id);
     latch_.unlock();
     return &pages_[frame_id];
   }
@@ -114,7 +113,7 @@ auto BufferPoolManager::UnpinPage(page_id_t page_id, bool is_dirty, [[maybe_unus
     return false;
   }
   pages_[frame_id].pin_count_--;
-  pages_[frame_id].is_dirty_ = is_dirty;
+  pages_[frame_id].is_dirty_ = is_dirty || pages_[frame_id].is_dirty_;
 
   if (pages_[frame_id].GetPinCount() == 0) {
     replacer_->SetEvictable(frame_id, true);
@@ -128,9 +127,6 @@ auto BufferPoolManager::FlushPageNoLock(page_id_t page_id) -> bool {
     return false;
   }
   frame_id_t frame_id = page_table_[page_id];
-  if (!pages_[frame_id].IsDirty()) {
-    return true;
-  }
   disk_manager_->WritePage(page_id, pages_[frame_id].GetData());
   pages_[frame_id].is_dirty_ = false;
   return true;
@@ -172,15 +168,22 @@ auto BufferPoolManager::DeletePage(page_id_t page_id) -> bool {
   pages_[frame_id].pin_count_ = 0;
   pages_[frame_id].ResetMemory();
   free_list_.push_front(frame_id);
+
+  DeallocatePage(page_id);
+
   latch_.unlock();
   return true;
 }
 
 auto BufferPoolManager::AllocatePage() -> page_id_t { return next_page_id_++; }
 
-auto BufferPoolManager::FetchPageBasic(page_id_t page_id) -> BasicPageGuard { return {this, FetchPage(page_id)}; }
+auto BufferPoolManager::FetchPageBasic(page_id_t page_id) -> BasicPageGuard {
+  // return {this, nullptr};
+  return {this, FetchPage(page_id)};
+}
 
 auto BufferPoolManager::FetchPageRead(page_id_t page_id) -> ReadPageGuard {
+  // return {this, nullptr};
   Page *page = FetchPage(page_id);
   if (page != nullptr) {
     page->RLatch();
@@ -189,6 +192,7 @@ auto BufferPoolManager::FetchPageRead(page_id_t page_id) -> ReadPageGuard {
 }
 
 auto BufferPoolManager::FetchPageWrite(page_id_t page_id) -> WritePageGuard {
+  // return {this, nullptr};
   Page *page = FetchPage(page_id);
   if (page != nullptr) {
     page->WLatch();
@@ -197,6 +201,7 @@ auto BufferPoolManager::FetchPageWrite(page_id_t page_id) -> WritePageGuard {
 }
 
 auto BufferPoolManager::NewPageGuarded(page_id_t *page_id) -> BasicPageGuard {
+  // return {this, nullptr};
   Page *page = NewPage(page_id);
   return {this, page};
 }

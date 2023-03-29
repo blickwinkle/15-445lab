@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/exception.h"
 #include "storage/page/page.h"
 
 namespace bustub {
@@ -10,7 +11,11 @@ class BasicPageGuard {
  public:
   BasicPageGuard() = default;
 
-  BasicPageGuard(BufferPoolManager *bpm, Page *page) : bpm_(bpm), page_(page) {}
+  BasicPageGuard(BufferPoolManager *bpm, Page *page) : bpm_(bpm), page_(page) {
+    // throw NotImplementedException(
+    //   "BasicPageGuard is not implemented yet. If you have finished implementing BPM, please remove the throw "
+    //   "exception line in `BasicPageGuard.cpp`.");
+  }
 
   BasicPageGuard(const BasicPageGuard &) = delete;
   auto operator=(const BasicPageGuard &) -> BasicPageGuard & = delete;
