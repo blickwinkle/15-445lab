@@ -47,6 +47,9 @@ class BPlusTreeInternalPage : public BPlusTreePage {
    */
   void Init(int max_size = INTERNAL_PAGE_SIZE);
 
+  auto ArrayAt(int index) -> MappingType &;
+  void SetValueAt(int index, const ValueType &val);
+
   /**
    * @param index The index of the key to get. Index must be non-zero.
    * @return Key at index

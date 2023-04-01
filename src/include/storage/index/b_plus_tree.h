@@ -72,6 +72,24 @@ class BPlusTree {
   // Returns true if this B+ tree has no keys and values.
   auto IsEmpty() const -> bool;
 
+  /**
+   * @param key 二分查找的key，找到大于等于它的第一个index
+   * @return Key at index
+   */
+  auto KeyIndex(const KeyType &key, const BPlusTreeLeafPage<KeyType, ValueType, KeyComparator> *node) const -> int;
+  auto KeyIndex(const KeyType &key, const BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator> *node) const -> int;
+
+  auto SplitNode(BPlusTreeLeafPage<KeyType, ValueType, KeyComparator> *fullnode,
+                 BPlusTreeLeafPage<KeyType, ValueType, KeyComparator> *newnode);
+  auto SplitNode(BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator> *fullnode,
+                 BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator> *newnode, int insert_pos, const KeyType &key,
+                 page_id_t val);
+
+  auto InsertKey(const KeyType &key, const ValueType &val, BPlusTreeLeafPage<KeyType, ValueType, KeyComparator> *node,
+                 int insertPos);
+  auto InsertKey(const KeyType &key, const page_id_t &val,
+                 BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator> *node, int insertPos);
+
   // Insert a key-value pair into this B+ tree.
   auto Insert(const KeyType &key, const ValueType &value, Transaction *txn = nullptr) -> bool;
 
@@ -82,7 +100,7 @@ class BPlusTree {
   auto GetValue(const KeyType &key, std::vector<ValueType> *result, Transaction *txn = nullptr) -> bool;
 
   // Return the page id of the root node
-  auto GetRootPageId() -> page_id_t;
+  auto GetRootPageId() const -> page_id_t;
 
   // Index iterator
   auto Begin() -> INDEXITERATOR_TYPE;
