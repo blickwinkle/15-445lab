@@ -64,6 +64,9 @@ INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_LEAF_PAGE_TYPE::ArrayAt(int index) -> MappingType & { return this->array_[index]; }
 
 INDEX_TEMPLATE_ARGUMENTS
+auto B_PLUS_TREE_LEAF_PAGE_TYPE::ArrayAt(int index) const -> const MappingType & { return this->array_[index]; }
+
+INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::SetKeyAt(int index, const KeyType &key) { this->array_[index].first = key; }
 
 INDEX_TEMPLATE_ARGUMENTS
