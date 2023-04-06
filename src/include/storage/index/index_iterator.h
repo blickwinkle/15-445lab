@@ -27,24 +27,29 @@ class IndexIterator {
   // you may define your own constructor based on your member variables
   IndexIterator(page_id_t pid, BufferPoolManager *bpm_, int ind);
   IndexIterator();
-  ~IndexIterator();  // NOLINT
+  ~IndexIterator() = default;  // NOLINT
 
-  auto IsEnd() -> bool;
+  auto IsEnd() const -> bool;
 
   auto operator*() -> const MappingType &;
 
   auto operator++() -> IndexIterator &;
 
-  auto operator==(const IndexIterator &itr) const -> bool { return this->pid_ ==  itr.pid_ && this->bpm_ == itr.bpm_ && this->ind_ == itr.ind_; }
+  auto operator==(const IndexIterator &itr) const -> bool {
+    return (this->pid_ == itr.pid_ && this->bpm_ == itr.bpm_ && this->ind_ == itr.ind_);
+  }
 
   auto operator!=(const IndexIterator &itr) const -> bool { return !this->operator==(itr); }
 
- private: 
+ private:
   // add your own private member variables here
-  ReadPageGuard leaf_pg_guard_;
+  // ReadPageGuard leaf_pg_guard_;
+  inline auto IsEndP(const BPlusTreeLeafPage<KeyType, ValueType, KeyComparator> *pg_pointer_) const -> bool {
+    return pg_pointer_->GetNextPageId() == INVALID_PAGE_ID && ind_ >= pg_pointer_->GetSize();
+  }
   BufferPoolManager *bpm_;
   page_id_t pid_;
-  const BPlusTreeLeafPage<KeyType, ValueType, KeyComparator> *pg_pointer_;
+  // const BPlusTreeLeafPage<KeyType, ValueType, KeyComparator> *pg_pointer_;
   int ind_;
 };
 

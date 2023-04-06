@@ -85,7 +85,8 @@ class BufferPoolManager {
    * @return BasicPageGuard holding a new page
    */
   auto NewPageGuarded(page_id_t *page_id) -> BasicPageGuard;
-
+  auto NewPageRead(page_id_t *page_id) -> ReadPageGuard;
+  auto NewPageWrite(page_id_t *page_id) -> WritePageGuard;
   /**
    * TODO(P1): Add implementation
    *
@@ -194,6 +195,8 @@ class BufferPoolManager {
   /** This latch protects shared data structures. We recommend updating this comment to describe what it protects. */
   std::mutex latch_;
 
+  std::list<page_id_t> free_page_id_;
+
   /**
    * @brief Allocate a page on disk. Caller should acquire the latch before calling this function.
    * @return the id of the allocated page
@@ -206,6 +209,7 @@ class BufferPoolManager {
    */
   void DeallocatePage(__attribute__((unused)) page_id_t page_id) {
     // This is a no-nop right now without a more complex data structure to track deallocated pages
+    free_page_id_.push_back(page_id);
   }
 
   // TODO(student): You may add additional private members and helper functions

@@ -12,16 +12,20 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cstdint>
 #include <deque>
 #include <iostream>
 #include <optional>
 #include <queue>
 #include <shared_mutex>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "common/config.h"
 #include "common/macros.h"
+#include "common/rwlatch.h"
 #include "concurrency/transaction.h"
 #include "storage/index/index_iterator.h"
 #include "storage/page/b_plus_tree_header_page.h"
@@ -93,19 +97,21 @@ class BPlusTree {
 
   auto DeleteKey(const KeyType &key, BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator> *node) -> bool;
   auto DeleteKey(const KeyType &key, BPlusTreeLeafPage<KeyType, ValueType, KeyComparator> *node) -> bool;
-  
-  auto MergeNode(BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator> *fatherNode, BPlusTreeLeafPage<KeyType, ValueType, KeyComparator> *childnode);
-    
-  auto MergeNode(BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator> *fatherNode, BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator> *childnode);
+
+  auto MergeNode(BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator> *fatherNode,
+                 BPlusTreeLeafPage<KeyType, ValueType, KeyComparator> *childnode);
+
+  auto MergeNode(BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator> *fatherNode,
+                 BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator> *childnode);
   // Insert a key-value pair into this B+ tree.
   auto Insert(const KeyType &key, const ValueType &value, Transaction *txn = nullptr) -> bool;
-  
 
   // Remove a key and its value from this B+ tree.
   void Remove(const KeyType &key, Transaction *txn);
 
   // 递归的从pid指向的node中删除key-val，并处理好该页面之下的所有合并操作
-  auto RemoveNodeWithoutMerge(const KeyType &key, Transaction *txn, page_id_t &pid) -> bool;
+  auto RemoveNodeWithoutMerge(const KeyType &key, Transaction *txn, page_id_t &pid, page_id_t &leftestchild,
+                              bool &needlookup) -> bool;
 
   // Return the value associated with a given key
   auto GetValue(const KeyType &key, std::vector<ValueType> *result, Transaction *txn = nullptr) -> bool;
@@ -144,6 +150,9 @@ class BPlusTree {
 
   // read data from file and remove one by one
   void RemoveFromFile(const std::string &file_name, Transaction *txn = nullptr);
+  auto GetBpm() -> BufferPoolManager * { return bpm_; }
+
+  ReaderWriterLatch check_iterator_latch_;
 
  private:
   /* Debug Routines for FREE!! */
@@ -168,6 +177,16 @@ class BPlusTree {
   int internal_max_size_;
   page_id_t header_page_id_;
   std::atomic_int kv_num_ = 0;
+
+  page_id_t del_func_use_ = INVALID_PAGE_ID;
+
+  // page_id_t end_ = INVALID_PAGE_ID;
+
+  // std::unordered_map<page_id_t, page_id_t> left_node_;
+  ReaderWriterLatch del_set_latch_;
+  ReaderWriterLatch insert_set_latch_;
+  std::unordered_set<int64_t> del_set_;
+  std::unordered_set<int64_t> insert_set_;
 };
 
 /**

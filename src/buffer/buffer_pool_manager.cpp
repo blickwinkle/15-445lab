@@ -67,8 +67,9 @@ auto BufferPoolManager::AllocateFrame(page_id_t page_id, frame_id_t *frame_id) -
 
 auto BufferPoolManager::NewPage(page_id_t *page_id) -> Page * {
   frame_id_t frame_id = -1;
-  page_id_t new_page_id = AllocatePage();
   latch_.lock();
+  page_id_t new_page_id = AllocatePage();
+
   if (!AllocateFrame(new_page_id, &frame_id)) {
     latch_.unlock();
     return nullptr;
@@ -175,7 +176,14 @@ auto BufferPoolManager::DeletePage(page_id_t page_id) -> bool {
   return true;
 }
 
-auto BufferPoolManager::AllocatePage() -> page_id_t { return next_page_id_++; }
+auto BufferPoolManager::AllocatePage() -> page_id_t {
+  if (free_page_id_.empty()) {
+    return next_page_id_++;
+  }
+  page_id_t ret = free_page_id_.back();
+  free_page_id_.pop_back();
+  return ret;
+}
 
 auto BufferPoolManager::FetchPageBasic(page_id_t page_id) -> BasicPageGuard {
   // return {this, nullptr};
@@ -203,6 +211,24 @@ auto BufferPoolManager::FetchPageWrite(page_id_t page_id) -> WritePageGuard {
 auto BufferPoolManager::NewPageGuarded(page_id_t *page_id) -> BasicPageGuard {
   // return {this, nullptr};
   Page *page = NewPage(page_id);
+  return {this, page};
+}
+
+auto BufferPoolManager::NewPageWrite(page_id_t *page_id) -> WritePageGuard {
+  // return {this, nullptr};
+  Page *page = NewPage(page_id);
+  if (page != nullptr) {
+    page->WLatch();
+  }
+  return {this, page};
+}
+
+auto BufferPoolManager::NewPageRead(page_id_t *page_id) -> ReadPageGuard {
+  // return {this, nullptr};
+  Page *page = NewPage(page_id);
+  if (page != nullptr) {
+    page->RLatch();
+  }
   return {this, page};
 }
 

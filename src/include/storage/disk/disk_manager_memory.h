@@ -101,11 +101,11 @@ class DiskManagerUnlimitedMemory : public DiskManager {
 
     std::unique_lock<std::mutex> l(mutex_);
     if (page_id >= static_cast<int>(data_.size()) || page_id < 0) {
-      LOG_WARN("page not exist");
+      LOG_WARN("page %d not exist", page_id);
       return;
     }
     if (data_[page_id] == nullptr) {
-      LOG_WARN("page not exist");
+      LOG_WARN("page %d not exist", page_id);
       return;
     }
     std::shared_ptr<ProtectedPage> ptr = data_[page_id];

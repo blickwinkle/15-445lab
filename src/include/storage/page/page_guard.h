@@ -158,7 +158,7 @@ class WritePageGuard {
   WritePageGuard(BufferPoolManager *bpm, Page *page) : guard_(bpm, page) {}
   WritePageGuard(const WritePageGuard &) = delete;
   auto operator=(const WritePageGuard &) -> WritePageGuard & = delete;
-
+  // auto operator=(const WritePageGuard) -> WritePageGuard & = delete;
   /** TODO(P1): Add implementation
    *
    * @brief Move constructor for WritePageGuard
