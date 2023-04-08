@@ -44,5 +44,13 @@ class IndexScanExecutor : public AbstractExecutor {
  private:
   /** The index scan plan node to be executed. */
   const IndexScanPlanNode *plan_;
+  /** Metadata identifying the table that should be deleted */
+  const TableInfo *table_info_;
+  /** Metadata identifying the index that should be deleted */
+  IndexInfo *index_;
+
+  IndexIterator<IntegerKeyType, IntegerValueType, IntegerComparatorType> iterator_;
+  // bool is_first_scan_;
+
 };
 }  // namespace bustub

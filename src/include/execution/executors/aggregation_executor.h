@@ -17,6 +17,7 @@
 #include <utility>
 #include <vector>
 
+#include "common/logger.h"
 #include "common/util/hash_util.h"
 #include "container/hash/hash_function.h"
 #include "execution/executor_context.h"
@@ -24,6 +25,7 @@
 #include "execution/expressions/abstract_expression.h"
 #include "execution/plans/aggregation_plan.h"
 #include "storage/table/tuple.h"
+#include "type/type.h"
 #include "type/value_factory.h"
 
 namespace bustub {
@@ -74,11 +76,39 @@ class SimpleAggregationHashTable {
     for (uint32_t i = 0; i < agg_exprs_.size(); i++) {
       switch (agg_types_[i]) {
         case AggregationType::CountStarAggregate:
+          result->aggregates_[i] = result->aggregates_[i].Add(ValueFactory::GetIntegerValue(1));
+          // LOG_INFO("star hit!");
+          break ;
         case AggregationType::CountAggregate:
+          if (input.aggregates_[i].IsNull()) { break; }
+          if (result->aggregates_[i].IsNull()) {
+            result->aggregates_[i] = ValueFactory::GetIntegerValue(0);
+          }
+          result->aggregates_[i] = result->aggregates_[i].Add(ValueFactory::GetIntegerValue(1));
+          break ;
         case AggregationType::SumAggregate:
+          if (input.aggregates_[i].IsNull()) { break; }
+          if (result->aggregates_[i].IsNull()) {
+            result->aggregates_[i] = ValueFactory::GetIntegerValue(0);
+          }
+          result->aggregates_[i] = result->aggregates_[i].Add(input.aggregates_[i]);
+          break ;
         case AggregationType::MinAggregate:
+          if (input.aggregates_[i].IsNull()) { break; }
+          if (result->aggregates_[i].IsNull()) {
+            result->aggregates_[i] = input.aggregates_[i];
+          } else {
+            result->aggregates_[i] = result->aggregates_[i].Min(input.aggregates_[i]);
+          }
+          break ;
         case AggregationType::MaxAggregate:
-          break;
+          if (input.aggregates_[i].IsNull()) { break; }
+          if (result->aggregates_[i].IsNull()) {
+            result->aggregates_[i] = input.aggregates_[i];
+          } else {
+            result->aggregates_[i] = result->aggregates_[i].Max(input.aggregates_[i]);
+          }
+          break ;
       }
     }
   }
@@ -196,13 +226,18 @@ class AggregationExecutor : public AbstractExecutor {
   }
 
  private:
+  auto GenerateInitialAggregateKey() -> AggregateKey {
+    return {std::vector<Value>{plan_->GetGroupBys().size(), ValueFactory::GetNullValueByType(TypeId::INTEGER)}};
+  }
   /** The aggregation plan node */
   const AggregationPlanNode *plan_;
   /** The child executor that produces tuples over which the aggregation is computed */
   std::unique_ptr<AbstractExecutor> child_;
   /** Simple aggregation hash table */
-  // TODO(Student): Uncomment SimpleAggregationHashTable aht_;
+  SimpleAggregationHashTable aht_;
   /** Simple aggregation hash table iterator */
-  // TODO(Student): Uncomment SimpleAggregationHashTable::Iterator aht_iterator_;
+  std::shared_ptr<SimpleAggregationHashTable::Iterator> aht_iterator_;
+
+  bool is_first_next_;
 };
 }  // namespace bustub

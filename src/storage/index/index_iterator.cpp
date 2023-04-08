@@ -26,13 +26,14 @@ INDEXITERATOR_TYPE::IndexIterator(page_id_t pid, BufferPoolManager *bpm, int ind
 // INDEX_TEMPLATE_ARGUMENTS
 // INDEXITERATOR_TYPE::~IndexIterator() = default;  // NOLINT
 
-INDEX_TEMPLATE_ARGUMENTS
-INDEXITERATOR_TYPE::IndexIterator() = default;
+// INDEX_TEMPLATE_ARGUMENTS
+// INDEXITERATOR_TYPE::IndexIterator() = default;
 
 INDEX_TEMPLATE_ARGUMENTS
 auto INDEXITERATOR_TYPE::IsEnd() const -> bool {
   // return pg_pointer_->GetNextPageId() == INVALID_PAGE_ID && ind_ == pg_pointer_->GetSize();
   // return ind_ == pg_pointer_->GetSize();
+  if (IsEmpty()) { return true; }
   ReadPageGuard pg_guard = bpm_->FetchPageRead(pid_);
   const auto *pg_pointer = pg_guard.As<BPlusTreeLeafPage<KeyType, ValueType, KeyComparator>>();
   return IsEndP(pg_pointer);
@@ -40,6 +41,9 @@ auto INDEXITERATOR_TYPE::IsEnd() const -> bool {
 
 INDEX_TEMPLATE_ARGUMENTS
 auto INDEXITERATOR_TYPE::operator*() -> const MappingType & {
+  if (IsEmpty()) {
+    BUSTUB_ASSERT(false, "*END\n");
+  }
   ReadPageGuard pg_guard = bpm_->FetchPageRead(pid_);
   const auto *pg_pointer = pg_guard.As<BPlusTreeLeafPage<KeyType, ValueType, KeyComparator>>();
   if (IsEndP(pg_pointer)) {
@@ -51,6 +55,9 @@ auto INDEXITERATOR_TYPE::operator*() -> const MappingType & {
 
 INDEX_TEMPLATE_ARGUMENTS
 auto INDEXITERATOR_TYPE::operator++() -> INDEXITERATOR_TYPE & {
+  if (IsEmpty()) {
+    BUSTUB_ASSERT(false, "++END\n");
+  }
   ReadPageGuard pg_guard = bpm_->FetchPageRead(pid_);
   const auto *pg_pointer = pg_guard.As<BPlusTreeLeafPage<KeyType, ValueType, KeyComparator>>();
   if (IsEndP(pg_pointer)) {

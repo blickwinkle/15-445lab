@@ -679,7 +679,7 @@ auto BPLUSTREE_TYPE::RemoveNodeWithoutMerge(const KeyType &key, Transaction *txn
 INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::Begin() -> INDEXITERATOR_TYPE {
   if (IsEmpty()) {
-    BUSTUB_ASSERT(false, "Get empty tree iterator!\n");
+    // BUSTUB_ASSERT(false, "Get empty tree iterator!\n");
     return INDEXITERATOR_TYPE();
   }
 
@@ -726,7 +726,7 @@ auto BPLUSTREE_TYPE::Begin() -> INDEXITERATOR_TYPE {
 INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::Begin(const KeyType &key) -> INDEXITERATOR_TYPE {
   if (IsEmpty()) {
-    BUSTUB_ASSERT(false, "Get empty tree iterator!\n");
+    // BUSTUB_ASSERT(false, "Get empty tree iterator!\n");
     return INDEXITERATOR_TYPE();
   }
 
