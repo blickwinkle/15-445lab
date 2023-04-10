@@ -19,14 +19,17 @@ namespace bustub {
 HashJoinExecutor::HashJoinExecutor(ExecutorContext *exec_ctx, const HashJoinPlanNode *plan,
                                    std::unique_ptr<AbstractExecutor> &&left_child,
                                    std::unique_ptr<AbstractExecutor> &&right_child)
-    : AbstractExecutor(exec_ctx) , plan_(plan), left_executor_(std::move(left_child)), right_executor_(std::move(right_child)){
+    : AbstractExecutor(exec_ctx),
+      plan_(plan),
+      left_executor_(std::move(left_child)),
+      right_executor_(std::move(right_child)) {
   if (!(plan->GetJoinType() == JoinType::LEFT || plan->GetJoinType() == JoinType::INNER)) {
     // Note for 2023 Spring: You ONLY need to implement left join and inner join.
     throw bustub::NotImplementedException(fmt::format("join type {} not supported", plan->GetJoinType()));
   }
 }
 
-void HashJoinExecutor::Init() { 
+void HashJoinExecutor::Init() {
   result_set_.clear();
   right_table_.clear();
 
@@ -36,7 +39,7 @@ void HashJoinExecutor::Init() {
   auto left_expr = plan_->LeftJoinKeyExpressions();
   Tuple tuple;
   RID rid;
-  
+
   while (right_executor_->Next(&tuple, &rid)) {
     std::vector<Value> key_set;
     key_set.reserve(right_expr.size());
@@ -49,7 +52,7 @@ void HashJoinExecutor::Init() {
     std::vector<Value> key_set;
     key_set.reserve(left_expr.size());
     for (auto &expr : left_expr) {
-      key_set.emplace_back(expr->Evaluate(&tuple, right_executor_->GetOutputSchema()));
+      key_set.emplace_back(expr->Evaluate(&tuple, left_executor_->GetOutputSchema()));
     }
     if (right_table_.count({key_set}) == 0) {
       if (plan_->GetJoinType() == JoinType::LEFT) {
@@ -64,7 +67,7 @@ void HashJoinExecutor::Init() {
   iterator_ = result_set_.begin();
 }
 
-auto HashJoinExecutor::Next(Tuple *tuple, RID *rid) -> bool { 
+auto HashJoinExecutor::Next(Tuple *tuple, RID *rid) -> bool {
   if (iterator_ == result_set_.end()) {
     return false;
   }

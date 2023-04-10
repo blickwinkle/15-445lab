@@ -20,10 +20,9 @@ UpdateExecutor::UpdateExecutor(ExecutorContext *exec_ctx, const UpdatePlanNode *
                                std::unique_ptr<AbstractExecutor> &&child_executor)
     : AbstractExecutor(exec_ctx), plan_(plan), child_executor_(std::move(child_executor)) {
   // As of Fall 2022, you DON'T need to implement update executor to have perfect score in project 3 / project 4.
-
 }
 
-void UpdateExecutor::Init() { 
+void UpdateExecutor::Init() {
   child_executor_->Init();
   table_info_ = exec_ctx_->GetCatalog()->GetTable(plan_->TableOid());
   index_ = exec_ctx_->GetCatalog()->GetTableIndexes(table_info_->name_);
@@ -31,7 +30,7 @@ void UpdateExecutor::Init() {
   has_exec_ = false;
 }
 
-auto UpdateExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool { 
+auto UpdateExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool {
   Tuple child_tuple;
   RID child_rid;
   row_count_ = 0;
@@ -45,10 +44,10 @@ auto UpdateExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool {
     // 从索引中删除老数据
     for (auto &index : index_) {
       auto new_key = child_tuple.KeyFromTuple(table_info_->schema_, *(index->index_->GetKeySchema()),
-                                            index->index_->GetKeyAttrs());
+                                              index->index_->GetKeyAttrs());
       index->index_->DeleteEntry(new_key, child_rid, transaction);
     }
-    
+
     // 通过表达式计算出新的values
     std::vector<Value> insert_values;
     for (auto &expr : plan_->target_expressions_) {
@@ -64,7 +63,7 @@ auto UpdateExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool {
     // 同步索引
     for (auto &index : index_) {
       auto new_key = insert_tuple.KeyFromTuple(table_info_->schema_, *(index->index_->GetKeySchema()),
-                                            index->index_->GetKeyAttrs());
+                                               index->index_->GetKeyAttrs());
       index->index_->InsertEntry(new_key, *inserted_rid, transaction);
     }
     row_count_++;

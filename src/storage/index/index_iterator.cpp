@@ -33,7 +33,9 @@ INDEX_TEMPLATE_ARGUMENTS
 auto INDEXITERATOR_TYPE::IsEnd() const -> bool {
   // return pg_pointer_->GetNextPageId() == INVALID_PAGE_ID && ind_ == pg_pointer_->GetSize();
   // return ind_ == pg_pointer_->GetSize();
-  if (IsEmpty()) { return true; }
+  if (IsEmpty()) {
+    return true;
+  }
   ReadPageGuard pg_guard = bpm_->FetchPageRead(pid_);
   const auto *pg_pointer = pg_guard.As<BPlusTreeLeafPage<KeyType, ValueType, KeyComparator>>();
   return IsEndP(pg_pointer);

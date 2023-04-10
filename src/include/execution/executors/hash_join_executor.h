@@ -15,6 +15,7 @@
 #include <memory>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "execution/executor_context.h"
 #include "execution/executors/abstract_executor.h"
@@ -54,7 +55,7 @@ class HashJoinExecutor : public AbstractExecutor {
   auto GetOutputSchema() const -> const Schema & override { return plan_->OutputSchema(); };
 
  private:
- void PutLeftJoin(Tuple* tuple) {
+  void PutLeftJoin(Tuple *tuple) {
     std::vector<Value> val;
     for (uint32_t i = 0; i < left_executor_->GetOutputSchema().GetColumnCount(); i++) {
       val.emplace_back(tuple->GetValue(&left_executor_->GetOutputSchema(), i));

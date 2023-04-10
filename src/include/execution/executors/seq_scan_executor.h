@@ -48,11 +48,12 @@ class SeqScanExecutor : public AbstractExecutor {
 
   /** @return The output schema for the sequential scan */
   auto GetOutputSchema() const -> const Schema & override { return plan_->OutputSchema(); }
+
  private:
   /** The sequential scan plan node to be executed */
   const SeqScanPlanNode *plan_;
-  //TableIterator *iter_ = nullptr;
+  // TableIterator *iter_ = nullptr;
   std::shared_ptr<TableIterator> iter_;
-  //std::optional<TableIterator> iter_;
+  // std::optional<TableIterator> iter_;
 };
 }  // namespace bustub

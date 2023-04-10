@@ -51,6 +51,5 @@ class IndexScanExecutor : public AbstractExecutor {
 
   IndexIterator<IntegerKeyType, IntegerValueType, IntegerComparatorType> iterator_;
   // bool is_first_scan_;
-
 };
 }  // namespace bustub

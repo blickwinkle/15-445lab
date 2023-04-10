@@ -78,37 +78,45 @@ class SimpleAggregationHashTable {
         case AggregationType::CountStarAggregate:
           result->aggregates_[i] = result->aggregates_[i].Add(ValueFactory::GetIntegerValue(1));
           // LOG_INFO("star hit!");
-          break ;
+          break;
         case AggregationType::CountAggregate:
-          if (input.aggregates_[i].IsNull()) { break; }
+          if (input.aggregates_[i].IsNull()) {
+            break;
+          }
           if (result->aggregates_[i].IsNull()) {
             result->aggregates_[i] = ValueFactory::GetIntegerValue(0);
           }
           result->aggregates_[i] = result->aggregates_[i].Add(ValueFactory::GetIntegerValue(1));
-          break ;
+          break;
         case AggregationType::SumAggregate:
-          if (input.aggregates_[i].IsNull()) { break; }
+          if (input.aggregates_[i].IsNull()) {
+            break;
+          }
           if (result->aggregates_[i].IsNull()) {
             result->aggregates_[i] = ValueFactory::GetIntegerValue(0);
           }
           result->aggregates_[i] = result->aggregates_[i].Add(input.aggregates_[i]);
-          break ;
+          break;
         case AggregationType::MinAggregate:
-          if (input.aggregates_[i].IsNull()) { break; }
+          if (input.aggregates_[i].IsNull()) {
+            break;
+          }
           if (result->aggregates_[i].IsNull()) {
             result->aggregates_[i] = input.aggregates_[i];
           } else {
             result->aggregates_[i] = result->aggregates_[i].Min(input.aggregates_[i]);
           }
-          break ;
+          break;
         case AggregationType::MaxAggregate:
-          if (input.aggregates_[i].IsNull()) { break; }
+          if (input.aggregates_[i].IsNull()) {
+            break;
+          }
           if (result->aggregates_[i].IsNull()) {
             result->aggregates_[i] = input.aggregates_[i];
           } else {
             result->aggregates_[i] = result->aggregates_[i].Max(input.aggregates_[i]);
           }
-          break ;
+          break;
       }
     }
   }

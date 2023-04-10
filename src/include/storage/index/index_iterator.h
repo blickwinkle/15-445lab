@@ -44,7 +44,7 @@ class IndexIterator {
  private:
   // add your own private member variables here
   // ReadPageGuard leaf_pg_guard_;
-  inline auto IsEmpty() const -> bool {  return bpm_ == nullptr || pid_ == INVALID_PAGE_ID; }
+  inline auto IsEmpty() const -> bool { return bpm_ == nullptr || pid_ == INVALID_PAGE_ID; }
   inline auto IsEndP(const BPlusTreeLeafPage<KeyType, ValueType, KeyComparator> *pg_pointer_) const -> bool {
     return pg_pointer_->GetNextPageId() == INVALID_PAGE_ID && ind_ >= pg_pointer_->GetSize();
   }

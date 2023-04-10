@@ -45,8 +45,8 @@ static auto CopyExprAndLookUpTupleIndex(const AbstractExpressionRef &expr, int &
     tuple_index = column_value_expr->GetTupleIdx();
     // auto ret = column_value_expr->CloneWithChildren(children);
     // auto tmp_p = dynamic_cast<ColumnValueExpression *>(ret.get());
-    return std::make_shared<ColumnValueExpression>(0, column_value_expr->GetColIdx(), column_value_expr->GetReturnType());
-    
+    return std::make_shared<ColumnValueExpression>(0, column_value_expr->GetColIdx(),
+                                                   column_value_expr->GetReturnType());
   }
   return expr->CloneWithChildren(children);
 }
@@ -55,7 +55,7 @@ static auto Solve(std::vector<AbstractExpressionRef> *expressions, const Compari
   int tuple_index = -1;
   auto copy_expr = CopyExprAndLookUpTupleIndex(comp_expr->GetChildAt(0), tuple_index);
   expressions[tuple_index].emplace_back(std::move(copy_expr));
-  
+
   tuple_index = -1;
   copy_expr = CopyExprAndLookUpTupleIndex(comp_expr->GetChildAt(1), tuple_index);
   expressions[tuple_index].emplace_back(std::move(copy_expr));
@@ -78,8 +78,10 @@ auto Optimizer::OptimizeNLJAsHashJoin(const AbstractPlanNodeRef &plan) -> Abstra
 
       std::vector<AbstractExpressionRef> expressions[2];
       Solve(expressions, comp_expr);
-      return std::make_shared<HashJoinPlanNode>(nlj_plan.output_schema_, nlj_plan.GetLeftPlan(), nlj_plan.GetRightPlan(), std::move(expressions[0]), std::move(expressions[1]), nlj_plan.join_type_);
-    } 
+      return std::make_shared<HashJoinPlanNode>(nlj_plan.output_schema_, nlj_plan.GetLeftPlan(),
+                                                nlj_plan.GetRightPlan(), std::move(expressions[0]),
+                                                std::move(expressions[1]), nlj_plan.join_type_);
+    }
     if (IsAndLogicExpr(nlj_plan.Predicate())) {
       const auto *logic_expr = dynamic_cast<const LogicExpression *>(nlj_plan.Predicate().get());
       if (IsCompEqulExpr(logic_expr->GetChildAt(0)) && IsCompEqulExpr(logic_expr->GetChildAt(1))) {
@@ -88,7 +90,9 @@ auto Optimizer::OptimizeNLJAsHashJoin(const AbstractPlanNodeRef &plan) -> Abstra
         Solve(expressions, comp_expr);
         comp_expr = dynamic_cast<const ComparisonExpression *>(logic_expr->GetChildAt(1).get());
         Solve(expressions, comp_expr);
-        return std::make_shared<HashJoinPlanNode>(nlj_plan.output_schema_, nlj_plan.GetLeftPlan(), nlj_plan.GetRightPlan(), std::move(expressions[0]), std::move(expressions[1]), nlj_plan.join_type_);
+        return std::make_shared<HashJoinPlanNode>(nlj_plan.output_schema_, nlj_plan.GetLeftPlan(),
+                                                  nlj_plan.GetRightPlan(), std::move(expressions[0]),
+                                                  std::move(expressions[1]), nlj_plan.join_type_);
       }
     }
   }

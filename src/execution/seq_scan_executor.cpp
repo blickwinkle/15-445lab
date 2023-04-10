@@ -15,22 +15,26 @@
 
 namespace bustub {
 
-SeqScanExecutor::SeqScanExecutor(ExecutorContext *exec_ctx, const SeqScanPlanNode *plan) : AbstractExecutor(exec_ctx), plan_(plan) {}
+SeqScanExecutor::SeqScanExecutor(ExecutorContext *exec_ctx, const SeqScanPlanNode *plan)
+    : AbstractExecutor(exec_ctx), plan_(plan) {}
 
-void SeqScanExecutor::Init() { 
-    // throw NotImplementedException("SeqScanExecutor is not implemented");
-    iter_ = std::make_shared<TableIterator>(exec_ctx_->GetCatalog()->GetTable(plan_->GetTableOid())->table_->MakeIterator());
+void SeqScanExecutor::Init() {
+  // throw NotImplementedException("SeqScanExecutor is not implemented");
+  iter_ =
+      std::make_shared<TableIterator>(exec_ctx_->GetCatalog()->GetTable(plan_->GetTableOid())->table_->MakeIterator());
 }
 
 auto SeqScanExecutor::Next(Tuple *tuple, RID *rid) -> bool {
-    while (!iter_->IsEnd() && iter_->GetTuple().first.is_deleted_) { ++*iter_; }
-    if (iter_->IsEnd()) {
-        return false;
-    }
-    *tuple = iter_->GetTuple().second;
-    *rid = iter_->GetRID();
+  while (!iter_->IsEnd() && iter_->GetTuple().first.is_deleted_) {
     ++*iter_;
-    return true; 
+  }
+  if (iter_->IsEnd()) {
+    return false;
+  }
+  *tuple = iter_->GetTuple().second;
+  *rid = iter_->GetRID();
+  ++*iter_;
+  return true;
 }
 
 }  // namespace bustub
